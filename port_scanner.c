@@ -2,88 +2,150 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 
-void append(char* s, char c)
+#define MAX_IP 13
+#define MAX_PORT 63000
+
+void appendChar(char* s, char c)
 {
     int len = strlen(s);
     s[len] = c;
     s[len+1] = '\0';
 }
 
-void replacer(char* str, char* final, int n, char c)
-{
+void changeLastDigit(char* str, char* final, int n, char c){
     char *i = &str[0]; int j = 0;
+
     while(*i != '\0' && j < n){
-        append(final, *i);
+        appendChar(final, *i);
         i++;
         j++;
     }
     
-    append(final, c);
-
+    appendChar(final, c);
 }
 
-int digit_to_int(char d)
-{
- char str[2];
+int char_to_int(char digit){
+    char str[2];
 
- str[0] = d;
- str[1] = '\0';
- return (int) strtol(str, NULL, 10);
+    str[0] = digit;
+    str[1] = '\0';
+
+    return (int) strtol(str, NULL, 10);
+}
+
+int connect_IP(char* ip, int port){
+    struct sockaddr_in server_addr;
+    int sock, try_connect;
+
+    //cria o socket
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+    
+    if(sock < 0){
+        printf("Erro ao criar o socket.\n");
+        exit(1);    
+    }
+    server_addr.sin_addr.s_addr = inet_addr(ip); 
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+
+    //Conectando ao ip
+    int i = 0;
+    try_connect = connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
+
+    if(try_connect < 0){
+        perror("");
+    }
+    
+    return sock;
+
 }
 
 void main(int argc, char *argv[]){
-    char range_ip[100];
-    char range_port[100];
+    char range_ipSeq[100];
+    char range_portSeq[100];
+    char first_ip[MAX_IP] = {0}, range_ip[MAX_IP] = {0};
+    char lastIP='\0', firstIP='\0', lastPort='\0', firstPort='\0';
+    char first_port[MAX_PORT] = {0};
+    char *i, *j, *k, *w;
+    int initIPSeq, finalIPSeq, initPortSeq, finalPortSeq, portnumber, range_port;
 
     if(argc < 3){
         printf("Entrada incorreta.\n A entrada deve seguir o seguinte modelo: ./portscanner <ip ou range de ips> <porta ou range de portas>");
         exit(0);
     }
 
-    strcpy(range_ip, argv[1]);
-    strcpy(range_port, argv[2]);
+    strcpy(range_ipSeq, argv[1]);
+    strcpy(range_portSeq, argv[2]);
 
-    printf("range_ip:%s \n", range_ip);
-    printf("range_port: %s \n", range_port);
+    printf("range_ip:%s \n", range_ipSeq);
+    printf("range_port: %s \n", range_portSeq);  
 
-    int tam_range_ip = strlen(range_ip);
-    int tam_range_port = strlen(range_port);
-    char *i, *j;
-    char first_ip[13] = {0}, last_ip[13] = {0};
-    char lastIP='\0', firstIP='\0';
+    /*Tratando o range/numero do ip*/
 
-    for(i = &range_ip[0]; *i != '\0'; i++){
-        printf("character I: %c\n", *i);
+    for(i = &range_ipSeq[0]; *i != '\0'; i++){
         if(*i == '-'){
             for(j = &i[1]; *j != '\0'; j++){
-                printf("character J: %c\n", *j);
                 lastIP = *j;
             }
             break;
         }
-        append(first_ip, *i);
+        appendChar(first_ip, *i);
         firstIP = *i;        
     }
 
-    replacer(first_ip, last_ip, 13, lastIP);
     printf("first_ip:%s \n", first_ip);
-    printf("digits:%c \n", lastIP);
-    printf("last_ip:%s \n", last_ip);
 
-    int init = digit_to_int(firstIP);
-    int final;
+    initIPSeq = char_to_int(firstIP);
     if(lastIP =='\0'){
-        final = init;
+        finalIPSeq = initIPSeq;
     }else{
-        final = digit_to_int(lastIP);
+        finalIPSeq = char_to_int(lastIP);
     }
 
-    for(int a = init; a <= final; a++){
-        last_ip[0] = '\0';
-        replacer(first_ip, last_ip, 13, (a+'0'));
-        printf("a: %d\n", a);
-        printf("teste:%s \n", last_ip);
+    /*Tratando range/numero de porta*/
+
+    for(k = &range_portSeq[0]; *k != '\0'; k++){
+        if(*k == '-'){
+            for(w = &k[1]; *w != '\0'; w++){
+                lastPort = *w;
+            }
+            break;
+        }
+        appendChar(first_port, *k);
+        firstPort = *k;        
+    }
+
+    printf("first_port:%s \n", first_port);
+
+    initPortSeq = char_to_int(firstPort);
+    portnumber = atoi(first_port);
+    if(lastPort =='\0'){
+        finalPortSeq = initPortSeq;
+    }else{
+        finalPortSeq = char_to_int(lastPort);
+    }
+
+    /*Loop de para scaneamento de ip + porta*/
+    range_port = portnumber;
+    for(int ip = initIPSeq; ip <= finalIPSeq; ip++){
+       	range_ip[0] = '\0';
+        changeLastDigit(first_ip, range_ip, 13, (ip +'0'));
+        printf("ip Digit: %d\n", ip);
+        printf("teste:%s \n", range_ip);
+        
+        for(int port = initPortSeq; port <= finalPortSeq; port++){
+       	    printf("port : %d\n", port);
+       	    printf("port number: %d\n", range_port);
+            connect_IP(range_ip, range_port);
+            range_port++;
+        }
+        range_port = portnumber;
+        
     }
 
 }
