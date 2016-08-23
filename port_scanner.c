@@ -6,146 +6,152 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <memory.h>
 
-#define MAX_IP 13
-#define MAX_PORT 63000
+#define MAX_IP 16
+#define MAX_PORT 66000
 
-void appendChar(char* s, char c)
-{
-    int len = strlen(s);
-    s[len] = c;
-    s[len+1] = '\0';
+char* itoa(int val, int base){
+	static char buf[32] = {0};
+	int i = 30;
+	
+	for(; val && i ; --i, val /= base)
+		buf[i] = "0123456789abcdef"[val % base];
+	
+	return &buf[i+1];
 }
 
-void changeLastDigit(char* str, char* final, int n, char c){
-    char *i = &str[0]; int j = 0;
-
-    while(*i != '\0' && j < n){
-        appendChar(final, *i);
-        i++;
-        j++;
-    }
-    
-    appendChar(final, c);
-}
-
-int char_to_int(char digit){
-    char str[2];
-
-    str[0] = digit;
-    str[1] = '\0';
-
-    return (int) strtol(str, NULL, 10);
-}
-
-int connect_IP(char* ip, int port){
-    struct sockaddr_in server_addr;
-    int sock, try_connect;
-
-    //cria o socket
-    sock = socket(AF_INET, SOCK_STREAM, 0);
-    
-    if(sock < 0){
-        printf("Erro ao criar o socket.\n");
-        exit(1);    
-    }
-    server_addr.sin_addr.s_addr = inet_addr(ip); 
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(port);
-
-    //Conectando ao ip
+void createToken(char *range[],  char string[], const char delimiter[], int *cont){
     int i = 0;
-    try_connect = connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
+    char *token;
+    /* get the first token */
+    token = strtok(string, delimiter);
+   
+    /* walk through other tokens */
+    while(token != NULL){
+        range[i] = token;
+        token = strtok(NULL, delimiter);
+        i++;
+    }
+    range[i] = token;
+    *cont = i;
+}
 
-    if(try_connect < 0){
-        perror("");
+void constructIPRange(char range_ipSeq[], char *range_ip[], char *rangeTotal[]){
+    const char delimiter[2] = "-";
+    const char delimiter2[2] = ".";
+    char *token, *token2;
+    char *range[MAX_IP] = {0};
+    char *range2[MAX_IP] = {0};
+    char first_ip[MAX_IP] = {0};
+    char *finalIPBand;
+    int i = 0, j, tamInit, tamFinal, initIP, finalIP;
+    char *ponto = ".";
+    char *addr;
+    char ip_aux[MAX_IP] = {0};
+    char ip[MAX_IP] = {0};
+    char range_ips[255] = {0};
+    
+    createToken(range_ip, range_ipSeq, delimiter, &i);
+    
+    finalIPBand = range_ip[1];
+    i = 0;
+    createToken(range, range_ip[0], delimiter2, &i);
+    tamInit = i-1;
+    
+    i = 0;
+    createToken(range2, finalIPBand, delimiter2, &i);
+    tamFinal = i-1;
+
+    for(i = 0; i < MAX_IP; i++){
+        if(i < tamInit){
+            strcpy(ip_aux, range[i]);
+            strcat(ip_aux, ponto);
+            strcat(ip, ip_aux);
+        }
     }
     
-    return sock;
+    initIP = atoi(range[tamInit]);
+    if(range2[0] == NULL){
+        finalIP = initIP;
+    }else{
+        finalIP = atoi(range2[tamFinal]);
+    }
+    
+    int numTotalIP = finalIP-initIP;
 
+    j = 0;
+    if(range2[0] == NULL){
+        strcat(ip, range[tamInit]);
+        rangeTotal[0] = strdup(ip);
+    }else{
+        for(i = initIP; i <= finalIP; i++){
+            if(i == 0){
+                ip_aux[0] = '\0';
+                strcpy(ip_aux, ip);
+                strcat(ip_aux, range[tamInit]);
+                rangeTotal[0] = strdup(ip_aux);
+                j++;
+            }else{
+                ip_aux[0] = '\0';
+                addr = itoa(i,10);
+                strcpy(ip_aux, ip);
+                strcat(ip_aux, addr);
+                rangeTotal[j] = strdup(ip_aux);
+                j += 1;
+            }
+        }
+    }
+    printf( "ip inicial: %d\n", initIP );
+    printf( "ip final: %d\n", finalIP );
+    
+}
+
+void constructPortRange(char range_ipSeq[], int range[], int *numPort){
+    char *token;
+    const char delimiter[2] = "-";
+    int port[2];
+    int init, final, i = 0, j =0;
+    
+    /* get the first token */
+    token = strtok(range_ipSeq, delimiter);
+   
+    /* walk through other tokens */
+    while(token != NULL){
+        port[i] = atoi(token);
+        token = strtok(NULL, delimiter);
+        i++;
+    }
+    init = port[0];
+    final = port[1];
+
+    *numPort = final - init;
+    for(i = init; i <= final; i++){
+        range[j] = i;
+        j += 1;
+    }
+    
 }
 
 void main(int argc, char *argv[]){
     char range_ipSeq[100];
     char range_portSeq[100];
-    char first_ip[MAX_IP] = {0}, range_ip[MAX_IP] = {0};
-    char lastIP='\0', firstIP='\0', lastPort='\0', firstPort='\0';
+    char *range_ip[MAX_IP] = {0};
+    char *rangeTotal[256] = {0};
     char first_port[MAX_PORT] = {0};
-    char *i, *j, *k, *w;
-    int initIPSeq, finalIPSeq, initPortSeq, finalPortSeq, portnumber, range_port;
+    int range_port[MAX_PORT];
+    int numPort;
+
 
     if(argc < 3){
-        printf("Entrada incorreta.\n A entrada deve seguir o seguinte modelo: ./portscanner <ip ou range de ips> <porta ou range de portas>");
+        printf("Entrada incorreta.\n\n A entrada deve seguir o seguinte modelo: ./portscanner <ip ou range de ips> <porta ou range de portas>\n");
         exit(0);
     }
 
     strcpy(range_ipSeq, argv[1]);
     strcpy(range_portSeq, argv[2]);
 
-    printf("range_ip:%s \n", range_ipSeq);
-    printf("range_port: %s \n", range_portSeq);  
-
-    /*Tratando o range/numero do ip*/
-
-    for(i = &range_ipSeq[0]; *i != '\0'; i++){
-        if(*i == '-'){
-            for(j = &i[1]; *j != '\0'; j++){
-                lastIP = *j;
-            }
-            break;
-        }
-        appendChar(first_ip, *i);
-        firstIP = *i;        
-    }
-
-    printf("first_ip:%s \n", first_ip);
-
-    initIPSeq = char_to_int(firstIP);
-    if(lastIP =='\0'){
-        finalIPSeq = initIPSeq;
-    }else{
-        finalIPSeq = char_to_int(lastIP);
-    }
-
-    /*Tratando range/numero de porta*/
-
-    for(k = &range_portSeq[0]; *k != '\0'; k++){
-        if(*k == '-'){
-            for(w = &k[1]; *w != '\0'; w++){
-                lastPort = *w;
-            }
-            break;
-        }
-        appendChar(first_port, *k);
-        firstPort = *k;        
-    }
-
-    printf("first_port:%s \n", first_port);
-
-    initPortSeq = char_to_int(firstPort);
-    portnumber = atoi(first_port);
-    if(lastPort =='\0'){
-        finalPortSeq = initPortSeq;
-    }else{
-        finalPortSeq = char_to_int(lastPort);
-    }
-
-    /*Loop de para scaneamento de ip + porta*/
-    range_port = portnumber;
-    for(int ip = initIPSeq; ip <= finalIPSeq; ip++){
-       	range_ip[0] = '\0';
-        changeLastDigit(first_ip, range_ip, 13, (ip +'0'));
-        printf("ip Digit: %d\n", ip);
-        printf("teste:%s \n", range_ip);
-        
-        for(int port = initPortSeq; port <= finalPortSeq; port++){
-       	    printf("port : %d\n", port);
-       	    printf("port number: %d\n", range_port);
-            connect_IP(range_ip, range_port);
-            range_port++;
-        }
-        range_port = portnumber;
-        
-    }
+    constructIPRange(range_ipSeq, range_ip, rangeTotal);
+    constructPortRange(range_portSeq, range_port, &numPort);
 
 }
