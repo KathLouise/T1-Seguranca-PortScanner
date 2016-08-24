@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <memory.h>
 #include <ctype.h>
+#include <time.h>
 
 #define MAX_IP 16
 #define MAX_PORT 65536
@@ -80,6 +81,12 @@ void constructIPRange(char range_ipSeq[], char *rangeTotal[], int *numIP){
         }
     }
     
+    if((!isdigit(*range[tamInit])) || (!isdigit(*range2[0]))){
+        printf("Digito inicial ou final do range é desconhecido. \n");
+        printf("Tente novamente, fornecendo somente numeros: XXX.XXX.XXX.XXX .\n");
+        exit(1);
+    }
+    
     initIP = atoi(range[tamInit]);
     if(range2[0] == NULL){
         finalIP = initIP;
@@ -113,7 +120,6 @@ void constructIPRange(char range_ipSeq[], char *rangeTotal[], int *numIP){
     }
     
     *numIP = numTotalIP;
-
 }
 
 void constructPortRange(char range_portSeq[], int range[], int *numPort){
@@ -122,7 +128,6 @@ void constructPortRange(char range_portSeq[], int range[], int *numPort){
     const char delimiter[2] = "-";
     int port[2];
     int init, final, j =0;
-    
     /* get the first token */
     token = strtok(range_portSeq, delimiter);
    
@@ -145,17 +150,18 @@ void constructPortRange(char range_portSeq[], int range[], int *numPort){
         exit(1);
     }
 
-    *numPort = final - init;
     for(i = init; i <= final; i++){
         range[j] = i;
         j += 1;
     }
+    *numPort = i;
     
 }
 
 int connectIP(int port_number, char *ip){
     struct sockaddr_in server_addr;
-    int sock, try_connect;
+    int sock, try_connect, recv;
+    char buffer[256];
 
     //cria o socket
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -164,7 +170,6 @@ int connectIP(int port_number, char *ip){
         printf("Erro ao criar o socket.\n");
         exit(1);    
     }
-    printf("1\n");
     server_addr.sin_addr.s_addr = inet_addr(ip); //IP do server, neste caso localhost
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port_number);
@@ -177,7 +182,15 @@ int connectIP(int port_number, char *ip){
         printf("Erro ao tentar conectar. \n");
         perror("");
     }
-
+    sleep(2);
+    recv = read(sock, buffer, 255);
+    if(recv < 0){
+        printf("Erro na leitura");
+        exit(1);
+    }else{
+        printf("%s\t %d\t %s", ip, port_number, buffer);
+    }
+    
     return sock;
 }
 
@@ -190,6 +203,8 @@ void main(int argc, char *argv[]){
     char first_port[MAX_PORT] = {0};
     int range_port[MAX_PORT];
     int numPort = 0, numIP = 0, i, j, isValidIP, hasIPRange = 1, hasPortRange = 1, sock;
+    time_t r_time;
+    struct tm *info;
 
     if(argc < 3){
         printf("Entrada incorreta.\n\n");
@@ -199,12 +214,21 @@ void main(int argc, char *argv[]){
 
     strcpy(range_ipSeq, argv[1]);
     strcpy(range_portSeq, argv[2]);
+ 
+    time(&r_time);
+    info = gmtime(&r_time);
+    printf("\nVarredura iniciada em %s\n", asctime(info));
 
+    printf("IP: %s\n", range_ipSeq);
+    printf("Portas: %s\n", range_portSeq);
+
+    printf("\n---------\n\n");
+    
     isIPRange = strchr (range_ipSeq, '-');
     if(isIPRange != NULL){
         constructIPRange(range_ipSeq, range_ip, &numIP);
     }else{
-        if(!isdigit(range_ipSeq[1])){
+        if(isdigit(range_ipSeq[1])){
             if(range_ipSeq[1] != '\0'){
                 range_ip[0] = range_ipSeq;
                 numIP = 1;
@@ -215,7 +239,6 @@ void main(int argc, char *argv[]){
             exit(1);
         }
     }
-    
     isPortRange = strchr (range_portSeq, '-');
     if(isPortRange != NULL){
         constructPortRange(range_portSeq, range_port, &numPort);
@@ -237,14 +260,12 @@ void main(int argc, char *argv[]){
             exit(1);
         }
     }
-
+    
     for(i = 0; i < numIP; i++){
         isValidIP = validateIPAddr(range_ip[i]);
         if(isValidIP){
             for(j = 0; j < numPort; j++){
-                printf("conectando =).\n");
-                printf("port.%d\n", range_port[j]);
-               // sock = connectIP(range_port[j], range_ip[i]);
+                sock = connectIP(range_port[j], range_ip[i]);
             }
         }else{
             printf("IP inválido.\n");
