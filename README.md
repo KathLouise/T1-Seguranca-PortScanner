@@ -1,6 +1,5 @@
 # T1-Seguranca-PortScanner
-Trabalho feito para a disciplina CI301 - Introdução à Segurança Computacional, docente: Professor André Grégio.
-Universidade Federal do Paraná
+Trabalho feito para a disciplina CI301 - Introdução à Segurança Computacional, mestrada pelo Professor André Grégio, da  Universidade Federal do Paraná
 ===========================================
 # Compilação
 Para compilar:  gcc portscanner.c -o portscanner
