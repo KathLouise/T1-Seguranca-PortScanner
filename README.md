@@ -1,7 +1,8 @@
 # T1-Seguranca-PortScanner
+
 Trabalho feito para a disciplina CI301 - Introdução à Segurança Computacional, mestrada pelo Professor André Grégio, da  Universidade Federal do Paraná
-===========================================
-# Compilação
+
+Compilação
 Para compilar:  gcc portscanner.c -o portscanner
 
 Entrada esperada: ./portscanner <range de IP ou um IP> <range de porta ou uma porta>
