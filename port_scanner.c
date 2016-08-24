@@ -185,7 +185,7 @@ int connectIP(int port_number, char *ip){
 void main(int argc, char *argv[]){
     char range_ipSeq[100];
     char range_portSeq[100];
-    char *rangeTotal[256] = {0};
+    char *range_ip[256] = {0};
     char *isIPRange, *isPortRange;
     char first_port[MAX_PORT] = {0};
     int range_port[MAX_PORT];
@@ -202,11 +202,11 @@ void main(int argc, char *argv[]){
 
     isIPRange = strchr (range_ipSeq, '-');
     if(isIPRange != NULL){
-        constructIPRange(range_ipSeq, rangeTotal, &numIP);
+        constructIPRange(range_ipSeq, range_ip, &numIP);
     }else{
         if(!isdigit(range_ipSeq[1])){
             if(range_ipSeq[1] != '\0'){
-                rangeTotal[0] = range_ipSeq;
+                range_ip[0] = range_ipSeq;
                 numIP = 1;
             }
         }else{
@@ -239,12 +239,12 @@ void main(int argc, char *argv[]){
     }
 
     for(i = 0; i < numIP; i++){
-        isValidIP = validateIPAddr(rangeTotal[i]);
+        isValidIP = validateIPAddr(range_ip[i]);
         if(isValidIP){
             for(j = 0; j < numPort; j++){
                 printf("conectando =).\n");
                 printf("port.%d\n", range_port[j]);
-               // sock = connectIP(range_port[j], rangeTotal[i]);
+               // sock = connectIP(range_port[j], range_ip[i]);
             }
         }else{
             printf("IP inválido.\n");
