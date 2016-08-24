@@ -7,9 +7,18 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <memory.h>
+#include <ctype.h>
 
 #define MAX_IP 16
 #define MAX_PORT 66000
+
+int validateIPAddr(char *ip){
+    struct sockaddr_in socket;
+    
+    int result = inet_pton(AF_INET, ip, &(socket.sin_addr));
+    
+    return result;
+}
 
 char* itoa(int val, int base){
 	static char buf[32] = {0};
@@ -37,20 +46,19 @@ void createToken(char *range[],  char string[], const char delimiter[], int *con
     *cont = i;
 }
 
-void constructIPRange(char range_ipSeq[], char *range_ip[], char *rangeTotal[]){
+void constructIPRange(char range_ipSeq[], char *range_ip[], char *rangeTotal[], int *numIP){
     const char delimiter[2] = "-";
     const char delimiter2[2] = ".";
-    char *token, *token2;
+    char *token, *token2, *addr;
     char *range[MAX_IP] = {0};
     char *range2[MAX_IP] = {0};
     char first_ip[MAX_IP] = {0};
     char *finalIPBand;
-    int i = 0, j, tamInit, tamFinal, initIP, finalIP;
     char *ponto = ".";
-    char *addr;
     char ip_aux[MAX_IP] = {0};
     char ip[MAX_IP] = {0};
     char range_ips[255] = {0};
+    int i = 0, j, tamInit, tamFinal, initIP, finalIP;
     
     createToken(range_ip, range_ipSeq, delimiter, &i);
     
@@ -102,26 +110,32 @@ void constructIPRange(char range_ipSeq[], char *range_ip[], char *rangeTotal[]){
             }
         }
     }
-    printf( "ip inicial: %d\n", initIP );
-    printf( "ip final: %d\n", finalIP );
     
+    *numIP = numTotalIP;
+
 }
 
-void constructPortRange(char range_ipSeq[], int range[], int *numPort){
+void constructPortRange(char range_portSeq[], int range[], int *numPort){
+    int i = 0;
     char *token;
     const char delimiter[2] = "-";
     int port[2];
-    int init, final, i = 0, j =0;
+    int init, final, j =0;
     
     /* get the first token */
-    token = strtok(range_ipSeq, delimiter);
+    token = strtok(range_portSeq, delimiter);
    
     /* walk through other tokens */
     while(token != NULL){
         port[i] = atoi(token);
+        if(!isdigit(port[i])){
+            printf("Range de porta invalida.\n");
+            exit(1);
+        }
         token = strtok(NULL, delimiter);
         i++;
     }
+    
     init = port[0];
     final = port[1];
 
@@ -140,8 +154,8 @@ void main(int argc, char *argv[]){
     char *rangeTotal[256] = {0};
     char first_port[MAX_PORT] = {0};
     int range_port[MAX_PORT];
-    int numPort;
-
+    int numPort = 0, numIP = 0, i, j, isValidIP, hasIPRange = 1, hasPortRange = 1;
+    char *isIPRange, *isPortRange;
 
     if(argc < 3){
         printf("Entrada incorreta.\n\n A entrada deve seguir o seguinte modelo: ./portscanner <ip ou range de ips> <porta ou range de portas>\n");
@@ -150,8 +164,35 @@ void main(int argc, char *argv[]){
 
     strcpy(range_ipSeq, argv[1]);
     strcpy(range_portSeq, argv[2]);
+    
+    
+    
+    isIPRange = strchr (range_ipSeq, '-');
+    if(isIPRange != NULL){
+        constructIPRange(range_ipSeq, range_ip, rangeTotal, &numIP);
+    }else{
+        rangeTotal[0] = range_ipSeq;
+        numIP = 1;
+    }
+    
+    isPortRange = strchr (range_portSeq, '-');
+    if(isPortRange != NULL){
+        constructPortRange(range_portSeq, range_port, &numPort);
+    }else{
+        printf("token: %d\n", range_port[0]);
+        if(!isdigit(range_port[0])){
+            printf("Porta inválida.\n");
+            exit(1);
+        }
+        numPort = 1;
+    }
 
-    constructIPRange(range_ipSeq, range_ip, rangeTotal);
-    constructPortRange(range_portSeq, range_port, &numPort);
-
+    for(i = 0; i < numIP; i++){
+        isValidIP = validateIPAddr(rangeTotal[i]);
+        if(isValidIP){
+            printf("IP válido.\n");
+        }else{
+            printf("IP inválido.\n");
+        }
+    }
 }
