@@ -212,7 +212,7 @@ int connectIP(int port_number, char *ip){
         printf("Erro ao criar o socket.\n");
         exit(1);    
     }
-    server_addr.sin_addr.s_addr = inet_addr(ip); //IP do server, neste caso localhost
+    server_addr.sin_addr.s_addr = inet_addr(ip);
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port_number);
 
@@ -221,14 +221,14 @@ int connectIP(int port_number, char *ip){
     try_connect = connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
 
     if(try_connect < 0){
+        printf("%s\t %d\n", ip, port_number);
         perror("");
-        exit(1);
     }
+    
     sleep(2);
     recv = read(sock, buffer, 255);
     if(recv < 0){
         printf("Erro na leitura.\n");
-        exit(1);
     }else{
         printf("%s\t %d\t %s\n", ip, port_number, buffer);
     }
