@@ -1,3 +1,11 @@
+//-------------------------------------------------------------------//
+// UNIVERSIDADE FEDERAL DO PARANÁ                                    //
+// KATHERYNE LOUISE GRAF     GRR:20120706   IDENTIFICADOR: KLG12     //
+// CI301 - INTRODUÇÃO À SEGURANÇA COMPUTACIONAL                      //
+//-------------------------------------------------------------------//
+// BIBLIOTECAS
+//-------------------------------------------------------------------//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,8 +18,17 @@
 #include <ctype.h>
 #include <time.h>
 
+//-------------------------------------------------------------------//
+// DEFINES
+//-------------------------------------------------------------------//
+
 #define MAX_IP 16
 #define MAX_PORT 65536
+
+//-------------------------------------------------------------------//
+// FUNÇÕES
+//-------------------------------------------------------------------//
+// Função que valida o endereço de ip
 
 int validateIPAddr(char *ip){
     struct sockaddr_in socket;
@@ -20,6 +37,9 @@ int validateIPAddr(char *ip){
     
     return result;
 }
+//-------------------------------------------------------------------//
+// Função que transforma um inteiro em char
+// É dependente da base do inteiro, para efetuar a conversão correta
 
 char* itoa(int val, int base){
 	static char buf[32] = {0};
@@ -30,14 +50,17 @@ char* itoa(int val, int base){
 	
 	return &buf[i+1];
 }
+//-------------------------------------------------------------------//
+// Função que particiona a string dependendo do delimitador passado
+// Divide a string em vários tokens se o delimitador passado estiver 
+// presente na string passada como parametro
 
 void createToken(char *range[],  char string[], const char delimiter[], int *cont){
     int i = 0;
     char *token;
-    /* get the first token */
+    
     token = strtok(string, delimiter);
-   
-    /* walk through other tokens */
+    
     while(token != NULL){
         range[i] = token;
         token = strtok(NULL, delimiter);
@@ -46,6 +69,14 @@ void createToken(char *range[],  char string[], const char delimiter[], int *con
     range[i] = token;
     *cont = i;
 }
+//-------------------------------------------------------------------//
+// Função que constroi o range de IP
+// Primeiro: particiona-se a string do IP de entrada em 2 (IP de inicio 
+// e os tres ultimos digitos do IP final).
+// Segundo: particiona o IP de inicio em vários tokens, e monta-se os 
+// 3 primeiros campos do endereço.
+// Terceiro: a partir do final do ip de inicio, gera-se todos os ultimo 
+// tres digitos daquele intervalo e guarda em um vetor.
 
 void constructIPRange(char range_ipSeq[], char *rangeTotal[], int *numIP){
     const char delimiter[2] = "-";
@@ -121,6 +152,12 @@ void constructIPRange(char range_ipSeq[], char *rangeTotal[], int *numIP){
     
     *numIP = numTotalIP;
 }
+//-------------------------------------------------------------------//
+// Função que constroi o range de portas
+// Primeiro: quebra a string inicial em tokens
+// Segundo: transforma o token de inicio e o token de fim em inteiros
+// Terceiro: gera uma lista de inteiros, para guardar todas as 
+// portas naquele intervalo
 
 void constructPortRange(char range_portSeq[], int range[], int *numPort){
     int i = 0;
@@ -128,10 +165,9 @@ void constructPortRange(char range_portSeq[], int range[], int *numPort){
     const char delimiter[2] = "-";
     int port[2];
     int init, final, j =0;
-    /* get the first token */
+
     token = strtok(range_portSeq, delimiter);
-   
-    /* walk through other tokens */
+
     while(token != NULL){
         if(!isdigit(*token)){
             printf("Range de porta invalida.\n");
@@ -157,6 +193,12 @@ void constructPortRange(char range_portSeq[], int range[], int *numPort){
     *numPort = i;
     
 }
+//-------------------------------------------------------------------//
+// Função que faz o scan da Posta
+// Primeiro: Abre o socket em protocolo TCP
+// Segundo: Seta os paramentos e faz o 3-way-handshake para 
+// pedido de conexão
+// Terceiro: Se conectar, ai pede o banner.
 
 int connectIP(int port_number, char *ip){
     struct sockaddr_in server_addr;
@@ -179,21 +221,24 @@ int connectIP(int port_number, char *ip){
     try_connect = connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
 
     if(try_connect < 0){
-        printf("Erro ao tentar conectar. \n");
         perror("");
+        exit(1);
     }
     sleep(2);
     recv = read(sock, buffer, 255);
     if(recv < 0){
-        printf("Erro na leitura");
+        printf("Erro na leitura.\n");
         exit(1);
     }else{
-        printf("%s\t %d\t %s", ip, port_number, buffer);
+        printf("%s\t %d\t %s\n", ip, port_number, buffer);
     }
     
     return sock;
 }
-
+//-------------------------------------------------------------------//
+// Função main
+// Faz a construção ou atribuição dos IPs e das Portas
+// Chama a função de validação de endereço ip e a de conexão
 
 void main(int argc, char *argv[]){
     char range_ipSeq[100];
@@ -272,3 +317,4 @@ void main(int argc, char *argv[]){
         }
     }
 }
+//-------------------------------------------------------------------//
