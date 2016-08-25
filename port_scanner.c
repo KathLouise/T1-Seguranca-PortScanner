@@ -203,7 +203,7 @@ void constructPortRange(char range_portSeq[], int range[], int *numPort){
 int connectIP(int port_number, char *ip){
     struct sockaddr_in server_addr;
     int sock, try_connect, recv;
-    char buffer[256];
+    char buffer[256] = {0};
 
     //cria o socket
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
