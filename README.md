@@ -25,3 +25,5 @@ Para compilar com Makefile: make
 Nome do programa muda para recon, enão para executar basta executar:
 Entrada esperada: ./recon <range de IP ou um IP> <range de porta ou uma porta>
 
+**************
+
