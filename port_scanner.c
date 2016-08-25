@@ -228,7 +228,7 @@ int connectIP(int port_number, char *ip){
     sleep(2);
     recv = read(sock, buffer, 255);
     if(recv < 0){
-        printf("Erro na leitura.\n");
+        printf("Erro na leitura.\n\n");
     }else{
         printf("%s\t %d\t %s\n", ip, port_number, buffer);
     }
