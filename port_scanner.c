@@ -257,6 +257,7 @@ void main(int argc, char *argv[]){
         exit(0);
     }
 
+    //Pega os ranges
     strcpy(range_ipSeq, argv[1]);
     strcpy(range_portSeq, argv[2]);
  
@@ -268,6 +269,8 @@ void main(int argc, char *argv[]){
     printf("Portas: %s\n", range_portSeq);
 
     printf("\n---------\n\n");
+
+    //Cuidando do range de IP/IP
     
     isIPRange = strchr (range_ipSeq, '-');
     if(isIPRange != NULL){
@@ -284,6 +287,8 @@ void main(int argc, char *argv[]){
             exit(1);
         }
     }
+    
+    //Cuidando do rande de Porta/Porta
     isPortRange = strchr (range_portSeq, '-');
     if(isPortRange != NULL){
         constructPortRange(range_portSeq, range_port, &numPort);
@@ -306,6 +311,7 @@ void main(int argc, char *argv[]){
         }
     }
     
+    //Verifica o IP e faz a conexão, se ele for valido
     for(i = 0; i < numIP; i++){
         isValidIP = validateIPAddr(range_ip[i]);
         if(isValidIP){
