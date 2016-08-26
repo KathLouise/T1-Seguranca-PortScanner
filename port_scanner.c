@@ -125,8 +125,12 @@ void constructIPRange(char range_ipSeq[], char *rangeTotal[], int *numIP){
         finalIP = atoi(range2[tamFinal]);
     }
     
-    int numTotalIP = finalIP-initIP;
-
+    if(finalIP < initIP){
+        printf("IP final é inferior ao IP de inicio. \n");
+        printf("Por favor entre com um intervalo valido, por exemplo: XXX.XXX.XXX.1-10\n");
+        exit(1);
+    }
+    
     j = 0;
     if(range2[0] == NULL){
         strcat(ip, range[tamInit]);
@@ -150,7 +154,7 @@ void constructIPRange(char range_ipSeq[], char *rangeTotal[], int *numIP){
         }
     }
     
-    *numIP = numTotalIP;
+    *numIP = j;
 }
 //-------------------------------------------------------------------//
 // Função que constroi o range de portas
@@ -233,7 +237,9 @@ int connectIP(int port_number, char *ip){
         printf("%s\t %d\t %s\n", ip, port_number, buffer);
     }
     
-    return sock;
+    if(sock > 1){
+        close(sock);
+    }
 }
 //-------------------------------------------------------------------//
 // Função main
@@ -310,7 +316,7 @@ void main(int argc, char *argv[]){
             exit(1);
         }
     }
-    
+
     //Verifica o IP e faz a conexão, se ele for valido
     for(i = 0; i < numIP; i++){
         isValidIP = validateIPAddr(range_ip[i]);
