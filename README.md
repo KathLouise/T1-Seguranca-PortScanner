@@ -2,12 +2,12 @@
 
 Trabalho feito para a disciplina CI301 - Introdução à Segurança Computacional, mestrada pelo Professor André Grégio, da  Universidade Federal do Paraná
 **************
-Para compilar normalmente:  gcc portscanner.c -o portscanner
+Para compilar normalmente:  gcc portscanner.c -o recon
 
-Entrada esperada: ./portscanner [range de IP ou um IP] [range de porta ou uma porta]
+Entrada esperada: ./recon [range de IP ou um IP] [range de porta ou uma porta]
 Exemplo: 
-  ./port_scanner 10.254.223.39 22
-  ./port_scanner 10.254.223.39-55 22-30
+  ./recon 10.254.223.39 22
+  ./recon 10.254.223.39-55 22-30
   
 Saída:
 

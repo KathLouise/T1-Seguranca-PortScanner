@@ -163,12 +163,12 @@ void constructIPRange(char range_ipSeq[], char *rangeTotal[], int *numIP){
 // Terceiro: gera uma lista de inteiros, para guardar todas as 
 // portas naquele intervalo
 
-void constructPortRange(char range_portSeq[], int range[], int *numPort){
-    int i = 0;
+void constructPortRange(char range_portSeq[], unsigned int range[], int *numPort){
+    int i = 0, j = 0;
     char *token;
     const char delimiter[2] = "-";
-    int port[2];
-    int init, final, j =0;
+    unsigned int port[2];
+    unsigned int init, final;
 
     token = strtok(range_portSeq, delimiter);
 
@@ -177,7 +177,7 @@ void constructPortRange(char range_portSeq[], int range[], int *numPort){
             printf("Range de porta invalida.\n");
             exit(1);
         }
-        port[i] = atoi(token);
+        port[i] = (unsigned int) atoi(token);
         token = strtok(NULL, delimiter);
         i++;
     }
@@ -204,7 +204,7 @@ void constructPortRange(char range_portSeq[], int range[], int *numPort){
 // pedido de conexão
 // Terceiro: Se conectar, ai pede o banner.
 
-int connectIP(int port_number, char *ip){
+int connectIP(unsigned int port_number, char *ip){
     struct sockaddr_in server_addr;
     int sock, try_connect, recv;
     char buffer[256] = {0};
@@ -252,14 +252,14 @@ void main(int argc, char *argv[]){
     char *range_ip[256] = {0};
     char *isIPRange, *isPortRange;
     char first_port[MAX_PORT] = {0};
-    int range_port[MAX_PORT];
+    unsigned int range_port[MAX_PORT];
     int numPort = 0, numIP = 0, i, j, isValidIP, hasIPRange = 1, hasPortRange = 1, sock;
     time_t r_time;
     struct tm *info;
 
     if(argc < 3){
         printf("Entrada incorreta.\n\n");
-        printf("A entrada deve seguir o seguinte modelo: ./portscanner <ip ou range de ips> <porta ou range de portas>\n");
+        printf("A entrada deve seguir o seguinte modelo: ./recon <ip ou range de ips> <porta ou range de portas>\n");
         exit(0);
     }
 
@@ -308,7 +308,7 @@ void main(int argc, char *argv[]){
                 printf("Range de porta extrapolou o valor permitido.\n");
                 exit(1);
             }
-            range_port[0] = atoi(range_portSeq);
+            range_port[0] = (unsigned int) atoi(range_portSeq);
             numPort = 1;
         }else{
             printf("Caracter de separação invalido, ou range desconhecido. \n");
