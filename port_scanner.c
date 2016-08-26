@@ -190,7 +190,7 @@ void constructPortRange(char range_portSeq[], int range[], int *numPort){
         range[j] = i;
         j += 1;
     }
-    *numPort = i;
+    *numPort = j;
     
 }
 //-------------------------------------------------------------------//
