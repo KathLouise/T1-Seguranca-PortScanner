@@ -114,7 +114,9 @@ void constructIPRange(char range_ipSeq[], char *rangeTotal[], int *numIP){
     
     if((!isdigit(*range[tamInit])) || (!isdigit(*range2[0]))){
         printf("Digito inicial ou final do range é desconhecido. \n");
+        fflush(stdout);
         printf("Tente novamente, fornecendo somente numeros: XXX.XXX.XXX.XXX .\n");
+        fflush(stdout);
         exit(1);
     }
     
@@ -127,7 +129,9 @@ void constructIPRange(char range_ipSeq[], char *rangeTotal[], int *numIP){
     
     if(finalIP < initIP){
         printf("IP final é inferior ao IP de inicio. \n");
+        fflush(stdout);
         printf("Por favor entre com um intervalo valido, por exemplo: XXX.XXX.XXX.1-10\n");
+        fflush(stdout);
         exit(1);
     }
     
@@ -175,6 +179,7 @@ void constructPortRange(char range_portSeq[], unsigned int range[], int *numPort
     while(token != NULL){
         if(!isdigit(*token)){
             printf("Range de porta invalida.\n");
+            fflush(stdout);
             exit(1);
         }
         port[i] = (unsigned int) atoi(token);
@@ -187,6 +192,7 @@ void constructPortRange(char range_portSeq[], unsigned int range[], int *numPort
     
     if(init > MAX_PORT || final > MAX_PORT){
         printf("Range de porta extrapolou o valor permitido.\n");
+        fflush(stdout);
         exit(1);
     }
 
@@ -214,6 +220,7 @@ int connectIP(unsigned int port_number, char *ip){
     
     if(sock < 0){
         printf("Erro ao criar o socket.\n");
+        fflush(stdout);
         exit(1);    
     }
     server_addr.sin_addr.s_addr = inet_addr(ip);
@@ -226,15 +233,19 @@ int connectIP(unsigned int port_number, char *ip){
 
     if(try_connect < 0){
         printf("%s\t %d\n", ip, port_number);
+        fflush(stdout);
         perror("");
+        fflush(stdout);
     }
     
     sleep(2);
     recv = read(sock, buffer, 255);
     if(recv < 0){
         printf("Erro na leitura.\n\n");
+        fflush(stdout);
     }else{
         printf("%s\t %d\t %s\n", ip, port_number, buffer);
+        fflush(stdout);
     }
     
     if(sock > 1){
@@ -259,7 +270,9 @@ void main(int argc, char *argv[]){
 
     if(argc < 3){
         printf("Entrada incorreta.\n\n");
+        fflush(stdout);
         printf("A entrada deve seguir o seguinte modelo: ./recon <ip ou range de ips> <porta ou range de portas>\n");
+        fflush(stdout);
         exit(0);
     }
 
@@ -270,14 +283,19 @@ void main(int argc, char *argv[]){
     time(&r_time);
     info = gmtime(&r_time);
     printf("\nVarredura iniciada em %s\n", asctime(info));
+    fflush(stdout);
 
     printf("IP: %s\n", range_ipSeq);
+    fflush(stdout);
     printf("Portas: %s\n", range_portSeq);
+    fflush(stdout);
 
     printf("\n---------\n\n");
+    fflush(stdout);
 
     //Cuidando do range de IP/IP
     
+    printf("1. \n");
     isIPRange = strchr (range_ipSeq, '-');
     if(isIPRange != NULL){
         constructIPRange(range_ipSeq, range_ip, &numIP);
@@ -289,30 +307,37 @@ void main(int argc, char *argv[]){
             }
         }else{
             printf("Caracter de separação invalido, ou range desconhecido. \n");
+            fflush(stdout);
             printf("Tente novamente, separando seu range por - .\n");
+            fflush(stdout);
             exit(1);
         }
     }
     
+    printf("2. \n");
     //Cuidando do rande de Porta/Porta
     isPortRange = strchr (range_portSeq, '-');
     if(isPortRange != NULL){
         constructPortRange(range_portSeq, range_port, &numPort);
     }else{
-        if(isdigit(range_portSeq[1])){
+        if(isdigit(range_portSeq[0])){
             if(!isdigit(range_portSeq[0])){
                 printf("Porta inválida.\n");
+                fflush(stdout);
                 exit(1);
             }
             if(atoi(range_portSeq) > MAX_PORT){
                 printf("Range de porta extrapolou o valor permitido.\n");
+                fflush(stdout);
                 exit(1);
             }
             range_port[0] = (unsigned int) atoi(range_portSeq);
             numPort = 1;
         }else{
             printf("Caracter de separação invalido, ou range desconhecido. \n");
+            fflush(stdout);
             printf("Tente novamente, separando seu range por - .\n");
+            fflush(stdout);
             exit(1);
         }
     }
@@ -326,6 +351,7 @@ void main(int argc, char *argv[]){
             }
         }else{
             printf("IP inválido.\n");
+            fflush(stdout);
         }
     }
 }
