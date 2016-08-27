@@ -295,7 +295,6 @@ void main(int argc, char *argv[]){
 
     //Cuidando do range de IP/IP
     
-    printf("1. \n");
     isIPRange = strchr (range_ipSeq, '-');
     if(isIPRange != NULL){
         constructIPRange(range_ipSeq, range_ip, &numIP);
@@ -314,7 +313,6 @@ void main(int argc, char *argv[]){
         }
     }
     
-    printf("2. \n");
     //Cuidando do rande de Porta/Porta
     isPortRange = strchr (range_portSeq, '-');
     if(isPortRange != NULL){
