@@ -195,6 +195,11 @@ void constructPortRange(char range_portSeq[], unsigned int range[], int *numPort
         fflush(stdout);
         exit(1);
     }
+    if(init > final){
+        printf("Valor da Porta Inicial é maior que o valor da Porta Final.\n");
+        fflush(stdout);
+        exit(1);
+    }
 
     for(i = init; i <= final; i++){
         range[j] = i;
@@ -204,7 +209,7 @@ void constructPortRange(char range_portSeq[], unsigned int range[], int *numPort
     
 }
 //-------------------------------------------------------------------//
-// Função que faz o scan da Posta
+// Função que faz o scan da Porta
 // Primeiro: Abre o socket em protocolo TCP
 // Segundo: Seta os paramentos e faz o 3-way-handshake para 
 // pedido de conexão
