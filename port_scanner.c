@@ -246,13 +246,17 @@ int connectIP(unsigned int port_number, char *ip){
         
         send = write(sock, buffer, 255);
         if(send < 0){
-            printf("Erro ao escrever no socket.\n");
+            printf("%s\t %d\n", ip, port_number);
+            fflush(stdout);
+            printf("Erro ao escrever no socket.\n\n");
         }
         
         bzero(buffer, 255);
 
         recv = read(sock, buffer, 255);
         if(recv < 0){
+            printf("%s\t %d\n", ip, port_number);
+            fflush(stdout);
             printf("Erro na leitura.\n\n");
             fflush(stdout);
         }else{
