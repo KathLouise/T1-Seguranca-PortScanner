@@ -212,8 +212,9 @@ void constructPortRange(char range_portSeq[], unsigned int range[], int *numPort
 
 int connectIP(unsigned int port_number, char *ip){
     struct sockaddr_in server_addr;
-    int sock, try_connect, recv;
+    int sock, try_connect, recv, send;
     char buffer[256] = {0};
+    char request[] = "Banner";
 
     //cria o socket
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -236,16 +237,28 @@ int connectIP(unsigned int port_number, char *ip){
         fflush(stdout);
         perror("");
         fflush(stdout);
-    }
-    
-    sleep(2);
-    recv = read(sock, buffer, 255);
-    if(recv < 0){
-        printf("Erro na leitura.\n\n");
+        printf("\n");
         fflush(stdout);
     }else{
-        printf("%s\t %d\t %s\n", ip, port_number, buffer);
-        fflush(stdout);
+        sleep(2);
+        
+        memcpy(buffer, request, strlen(request));
+        
+        send = write(sock, buffer, 255);
+        if(send < 0){
+            printf("Erro ao escrever no socket.\n");
+        }
+        
+        bzero(buffer, 255);
+
+        recv = read(sock, buffer, 255);
+        if(recv < 0){
+            printf("Erro na leitura.\n\n");
+            fflush(stdout);
+        }else{
+            printf("%s\t %d\t %s\n\n", ip, port_number, buffer);
+            fflush(stdout);
+        }
     }
     
     if(sock > 1){
