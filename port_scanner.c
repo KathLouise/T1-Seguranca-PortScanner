@@ -247,8 +247,6 @@ int connectIP(unsigned int port_number, char *ip){
     }else{
         sleep(2);
         
-        memcpy(buffer, request, strlen(request));
-        
         send = write(sock, "ack", strlen("ack"));
         if(send < 0){
             printf("%s\t %d\n", ip, port_number);
