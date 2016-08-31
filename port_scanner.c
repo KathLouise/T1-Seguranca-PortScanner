@@ -218,7 +218,7 @@ void constructPortRange(char range_portSeq[], unsigned int range[], int *numPort
 int connectIP(unsigned int port_number, char *ip){
     struct sockaddr_in server_addr;
     int sock, try_connect, recv, send;
-    char buffer[256] = {0};
+    char buffer[1024] = {0};
     char request[] = "Banner";
 
     //cria o socket
@@ -249,7 +249,7 @@ int connectIP(unsigned int port_number, char *ip){
         
         memcpy(buffer, request, strlen(request));
         
-        send = write(sock, buffer, 255);
+        send = write(sock, "ack", strlen("ack"));
         if(send < 0){
             printf("%s\t %d\n", ip, port_number);
             fflush(stdout);
@@ -258,7 +258,7 @@ int connectIP(unsigned int port_number, char *ip){
         
         bzero(buffer, 255);
 
-        recv = read(sock, buffer, 255);
+        recv = read(sock, buffer, 1023);
         if(recv < 0){
             printf("%s\t %d\n", ip, port_number);
             fflush(stdout);
