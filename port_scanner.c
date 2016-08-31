@@ -219,7 +219,6 @@ int connectIP(unsigned int port_number, char *ip){
     struct sockaddr_in server_addr;
     int sock, try_connect, recv, send;
     char buffer[1024] = {0};
-    char request[] = "Banner";
 
     //cria o socket
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
