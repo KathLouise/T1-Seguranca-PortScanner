@@ -6,7 +6,9 @@ Trabalho feito para a disciplina CI301 - Introdução à Segurança Computaciona
 Para compilar normalmente:  
 
 > $ gcc portscanner.c -o recon 
+
 ou
+
 > $ make
 
 - Entrada esperada: 
